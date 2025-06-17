@@ -1,7 +1,24 @@
-// app/api/weather/route.ts
-import { NextResponse } from "next/server";
+// app/api/location/route.ts
+import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { rateLimiter } from '@/lib/rate-limiter';
+
+interface OpenWeatherLocation {
+  name: string;
+  lat: number;
+  lon: number;
+  country: string;
+  state?: string;
+}
+
+interface SimplifiedLocation {
+  name: string;
+  lat: number;
+  lon: number;
+  country: string;
+  state?: string;
+  displayName: string;
+}
 
 export async function GET(request: Request) {
   try {
@@ -17,14 +34,29 @@ export async function GET(request: Request) {
           remaining,
           reset: new Date(reset).toISOString() 
         },
-        { status: 429, headers: { 'Retry-After': '10' } }
+        { 
+          status: 429, 
+          headers: { 
+            'Retry-After': '10',
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          } 
+        }
       );
     }
 
     const { searchParams } = new URL(request.url);
-    const lat = searchParams.get('lat');
-    const lon = searchParams.get('lon');
-    const apiKey = process.env.OPENWEATHER_API_KEY as string;
+    const query = searchParams.get('q');
+    const limitParam = searchParams.get('limit') || '5';
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+
+    if (!query) {
+      return NextResponse.json(
+        { error: 'Location query is required' },
+        { status: 400 }
+      );
+    }
 
     if (!apiKey) {
       return NextResponse.json(
@@ -33,25 +65,28 @@ export async function GET(request: Request) {
       );
     }
 
-    if (!lat || !lon) {
-      return NextResponse.json(
-        { error: 'Latitude and Longitude are required' },
-        { status: 400 }
-      );
-    }
-
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    const url = `http://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=${limitParam}&appid=${apiKey}`;
     const response = await axios.get(url);
 
-    return NextResponse.json(response.data, {
-      status: 200,
-      headers: { 
+    const locations: SimplifiedLocation[] = (response.data as OpenWeatherLocation[]).map((loc) => ({
+      name: loc.name,
+      lat: loc.lat,
+      lon: loc.lon,
+      country: loc.country,
+      state: loc.state,
+      displayName: `${loc.name}${loc.state ? `, ${loc.state}` : ''}, ${loc.country}`
+    }));
+
+    return NextResponse.json(locations, {
+      headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=86400', // Cache for 24 hours
         'X-RateLimit-Limit': limit.toString(),
         'X-RateLimit-Remaining': remaining.toString(),
         'X-RateLimit-Reset': reset.toString()
-      },
+      }
     });
+
   } catch (error: unknown) {
     let errorMessage = 'Unknown error';
     let errorDetails = {};
