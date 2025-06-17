@@ -1,7 +1,60 @@
+"use client";
 import Image from "next/image";
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from "next/navigation";
-import { SignedIn, UserButton } from "@clerk/nextjs";
+
+import { useState, useEffect } from "react"
+import { Search, Menu, X, MapPin, Clock, Sun, Cloud, CloudRain, Snowflake, Zap } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs"
+
+// Mock data for autocomplete suggestions
+const mockCities = [
+  { name: "New York", country: "US", temp: "22°C" },
+  { name: "London", country: "UK", temp: "15°C" },
+  { name: "Tokyo", country: "JP", temp: "28°C" },
+  { name: "Paris", country: "FR", temp: "18°C" },
+  { name: "Sydney", country: "AU", temp: "25°C" },
+  { name: "Berlin", country: "DE", temp: "16°C" },
+  { name: "Toronto", country: "CA", temp: "20°C" },
+  { name: "Mumbai", country: "IN", temp: "32°C" },
+]
+
+// Mock recent searches for logged-in users
+const mockRecentSearches = [
+  { name: "San Francisco", temp: "19°C", time: "2 hours ago" },
+  { name: "Miami", temp: "29°C", time: "1 day ago" },
+  { name: "Chicago", temp: "12°C", time: "3 days ago" },
+]
+
+const WeatherIcon = ({ type, className = "w-6 h-6" }: { type: string; className?: string }) => {
+  const icons = {
+    sun: Sun,
+    cloud: Cloud,
+    rain: CloudRain,
+    snow: Snowflake,
+    storm: Zap,
+  }
+
+  const IconComponent = icons[type as keyof typeof icons] || Sun
+
+  return (
+    <IconComponent
+      className={`${className} animate-pulse`}
+      style={{
+        animation:
+          type === "sun"
+            ? "spin 20s linear infinite"
+            : type === "cloud"
+              ? "float 3s ease-in-out infinite"
+              : "pulse 2s ease-in-out infinite",
+      }}
+    />
+  )
+}
 
 export default async function Home() {
   const clerkUser = await currentUser();
