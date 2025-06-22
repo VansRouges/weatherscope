@@ -21,7 +21,8 @@ async function getWeatherData(lat: number, lon: number, forceRefresh = false) {
       const response = await fetch(url, {
         next: { revalidate: forceRefresh ? 0 : 3600 }, // 1 hour cache
       });
-      
+      console.log('Fetching weather data from:', url);
+      // Check if the response is ok
       if (!response.ok) {
         throw new Error(`Weather data fetch failed with status ${response.status}`);
       }
@@ -40,8 +41,10 @@ export default async function ForecastPage({
   searchParams 
 }: ForecastPageProps) {
   // First await the params promise
-  const awaitedParams = await params;
-  const [lat, lon] = awaitedParams.id.split('--').map(Number);
+  const { id } = await params;
+  console.log('Forecast page params:', id);
+
+  const [lat, lon] = id.split('--').map(Number);
   
   if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
     return notFound();
@@ -62,7 +65,9 @@ export default async function ForecastPage({
         </div>
         
         <Suspense fallback={<WeatherSkeleton />}>
-          <WeatherDisplay data={weatherData} />
+          <WeatherDisplay 
+            initialData={weatherData} 
+          />
         </Suspense>
       </div>
     );

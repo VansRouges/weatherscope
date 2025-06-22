@@ -1,13 +1,7 @@
 import SearchBar from "./Search";
 import WeatherIcon from "./WeatherIcon";
 
-interface HeroProps {
-  onLocationSelect: (location: any) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
-}
-
-export default function Hero({ onLocationSelect, isLoading, setIsLoading }: HeroProps) {
+export default function Hero() {
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
       <div className="text-center space-y-8">

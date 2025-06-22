@@ -42,6 +42,7 @@ export default function SearchBar() {
           setSuggestions(data);
           setShowSuggestions(true);
         } catch (err) {
+          console.error("Error fetching locations:", err);
           setError("Failed to fetch locations. Please try again.");
           setSuggestions([]);
         } finally {
