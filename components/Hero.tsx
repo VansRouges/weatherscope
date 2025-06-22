@@ -28,11 +28,7 @@ export default function Hero({ onLocationSelect, isLoading, setIsLoading }: Hero
           </p>
         </div>
 
-        <SearchBar 
-          onLocationSelect={onLocationSelect} 
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-        />
+        <SearchBar />
       </div>
     </main>
   );

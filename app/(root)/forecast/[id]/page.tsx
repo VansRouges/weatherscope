@@ -9,46 +9,65 @@ interface ForecastPageProps {
   searchParams: { refresh?: string };
 }
 
+async function getWeatherData(lat: number, lon: number, forceRefresh = false) {
+    try {
+      // Ensure API key is properly set in the environment
+      const apiKey = process.env.OPENWEATHER_API_KEY;
+      if (!apiKey) throw new Error('API key not configured');
+      
+      // Prepend the full base URL to the internal API call
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`; // Pass the API key if needed
+      
+      const response = await fetch(url, {
+        next: { revalidate: forceRefresh ? 0 : 3600 }, // 1 hour cache
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Weather data fetch failed with status ${response.status}`);
+      }
+  
+      return await response.json(); // Return weather data from your API
+    } catch (error) {
+      console.error('Failed to fetch weather data:', error);
+      throw error; // Propagate error for handling further up the call stack
+    }
+  }
+  
+  
+
 export default async function ForecastPage({ 
   params, 
   searchParams 
 }: ForecastPageProps) {
-  const [lat, lon] = params.id.split('--').map(Number);
+  // First await the params promise
+  const awaitedParams = await params;
+  const [lat, lon] = awaitedParams.id.split('--').map(Number);
   
   if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
     return notFound();
   }
 
-  // Force refresh if requested
-  const weatherData = await getWeatherData(lat, lon, searchParams.refresh === 'true');
+  // Then await the searchParams promise
+  const awaitedSearchParams = await searchParams;
+  const forceRefresh = awaitedSearchParams.refresh === 'true';
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Weather Forecast</h1>
-        <RefreshButton />
-      </div>
-      
-      <Suspense fallback={<WeatherSkeleton />}>
-        <WeatherDisplay data={weatherData} />
-      </Suspense>
-    </div>
-  );
-}
-
-async function getWeatherData(lat: number, lon: number, forceRefresh = false) {
   try {
-    const apiKey = process.env.OPENWEATHER_API_KEY;
-    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely&appid=${apiKey}&units=metric`;
-    
-    const response = await fetch(url, {
-      next: { revalidate: forceRefresh ? 0 : 3600 } // 1 hour cache
-    });
-    
-    if (!response.ok) throw new Error('Weather data fetch failed');
-    return await response.json();
+    const weatherData = await getWeatherData(lat, lon, forceRefresh);
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Weather Forecast</h1>
+          <RefreshButton />
+        </div>
+        
+        <Suspense fallback={<WeatherSkeleton />}>
+          <WeatherDisplay data={weatherData} />
+        </Suspense>
+      </div>
+    );
   } catch (error) {
-    console.error('Failed to fetch weather data:', error);
-    throw error;
+    console.error('Error rendering forecast page:', error);
+    return notFound();
   }
 }
