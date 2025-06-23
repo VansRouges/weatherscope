@@ -36,6 +36,7 @@ async function getWeatherData(lat: number, lon: number, forceRefresh = false) {
 async function saveSearchHistory(locationName: string, lat: number, lon: number, temperature: number, userId: string | null) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    
     const response = await fetch(`${baseUrl}/api/create-history`, {
       method: 'POST',
       headers: {
