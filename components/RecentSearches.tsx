@@ -98,6 +98,8 @@ export default function RecentSearches({
   if (error) return <div>Error: {error}</div>;
   if (searches.length === 0) return <div>No recent searches found</div>;
 
+  console.log('Recent searches:', searches);
+
   return (
     <div className="max-w-2xl mx-auto mt-12 relative z-0">
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">

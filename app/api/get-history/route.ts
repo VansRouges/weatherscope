@@ -12,6 +12,8 @@ export async function GET() {
     const transformedData = searchHistory.map(entry => ({
       id: entry._id,
       name: entry?.meta?.en?.locationname,
+      lat: entry?.meta?.en?.lat,
+      lon: entry?.meta?.en?.lon,
       temp: `${entry?.meta?.en?.temperature}°C`,
       timestamp: entry?.meta?.en?.timestamp // Keep the raw timestamp
     }));
