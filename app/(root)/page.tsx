@@ -3,20 +3,21 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RecentSearches from "@/components/RecentSearches";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState<"C" | "F">("C");
   // const [isLoading, setIsLoading] = useState(false);
-  const [recentSearches] = useState([
-    { name: "San Francisco", temp: "19°C", time: "2 hours ago" },
-    { name: "Miami", temp: "29°C", time: "1 day ago" },
-    { name: "Chicago", temp: "12°C", time: "3 days ago" },
-  ]);
+  // const [recentSearches] = useState([
+  //   { name: "San Francisco", temp: "19°C", time: "2 hours ago" },
+  //   { name: "Miami", temp: "29°C", time: "1 day ago" },
+  //   { name: "Chicago", temp: "12°C", time: "3 days ago" },
+  // ]);
 
-  const handleRecentSearchClick = (name: string) => {
-    console.log("Recent search clicked:", name);
-    // You would trigger a new search here
+  const handleRecentSearchClick = (id: string) => {
+    router.push(`/forecast/${id}`);
   };
 
   return (
@@ -32,7 +33,6 @@ export default function Home() {
 
       {/* Add RecentSearches component */}
       <RecentSearches 
-        searches={recentSearches}
         tempUnit={tempUnit}
         onSearchClick={handleRecentSearchClick}
       />

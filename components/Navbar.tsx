@@ -1,7 +1,9 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { UserButton, SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
 import { Menu, X } from "lucide-react";
 import WeatherIcon from "./WeatherIcon";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   mobileMenuOpen: boolean;
@@ -17,6 +19,7 @@ export default function Navbar({
   setTempUnit,
 }: NavbarProps) {
   const { isSignedIn } = useUser();
+  const router = useRouter();
 
   return (
     <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-blue-100 dark:border-slate-700 sticky top-0 z-50">
@@ -38,15 +41,14 @@ export default function Navbar({
             </Button>
 
             {isSignedIn ? (
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             ) : (
               <div className="flex items-center space-x-2">
-                <SignInButton mode="modal">
-                  <Button variant="ghost" size="sm">Login</Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button size="sm">Sign Up</Button>
-                </SignUpButton>
+                
+                  <Button variant="ghost" size="sm" onClick={() => router.push("/sign-in")}>Login</Button>
+
+                  <Button size="sm" onClick={() => router.push("/sign-up")}>Sign Up</Button>
+
               </div>
             )}
           </div>

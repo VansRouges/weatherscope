@@ -1,6 +1,5 @@
 import type { BCMSEntryContentParsed } from '../content';
 import type { BCMSEntryStatuses } from '../status';
-import type { PropValueDateData } from '@thebcms/types';
 
 export interface SearchhistoryEntryMetaItem {
     title: string;
@@ -8,7 +7,8 @@ export interface SearchhistoryEntryMetaItem {
     locationname: string;
     lat: number;
     lon: number;
-    timestamp?: PropValueDateData;
+    temperature: number;
+    timestamp?: string;
     userid: string;
 }
 
