@@ -2,6 +2,12 @@
 import { NextResponse } from "next/server";
 import axios from 'axios';
 import { rateLimiter } from '@/lib/rate-limiter';
+import type { 
+  CurrentWeatherResponse, 
+  ForecastResponse, 
+} from '@/types';
+import { processForecastData } from "@/lib/utils";
+
 
 export async function GET(request: Request) {
   try {
@@ -40,10 +46,25 @@ export async function GET(request: Request) {
       );
     }
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-    const response = await axios.get(url);
-    console.log('Response:', response.data)
-    return NextResponse.json(response.data, {
+    // Current weather endpoint
+    const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    
+    // 5-day forecast endpoint (3-hour intervals)
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+    // Fetch both current weather and forecast with proper typing
+    const [currentResponse, forecastResponse] = await Promise.all([
+      axios.get<CurrentWeatherResponse>(currentUrl),
+      axios.get<ForecastResponse>(forecastUrl)
+    ]);
+
+    // Process forecast data to group by day
+    const dailyForecasts = processForecastData(forecastResponse.data);
+
+    return NextResponse.json({
+      current: currentResponse.data,
+      forecast: dailyForecasts
+    }, {
       status: 200,
       headers: { 
         'Content-Type': 'application/json',

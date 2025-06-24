@@ -1,23 +1,23 @@
 import { NextResponse } from "next/server";
 import { bcms } from "@/lib/bcms";
-// import { auth } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server'; // <-- uncomment this
 
 export async function POST(request: Request) {
-    // const { userId } = await auth()
-    
+    const { userId } = await auth(); // <-- get userId from Clerk
+
     try {
         // Parse the request body
         const body = await request.json();
 
-        // Validate required fields
-        if (!body.locationName || typeof body.lat !== 'number' || typeof body.lon !== 'number' || typeof body.temperature !== 'number' || typeof body.userId === undefined) {
+        // Validate required fields (remove userId from required fields)
+        if (!body.locationName || typeof body.lat !== 'number' || typeof body.lon !== 'number' || typeof body.temperature !== 'number') {
             return NextResponse.json(
                 { success: false, error: "Missing required fields (locationName, lat, lon, temperature)" },
                 { status: 400 }
             );
         }
 
-        // Generate a slug from location name (removed timestamp as requested)
+        // Generate a slug from location name
         const slug = body.locationName.toLowerCase().replace(/\s+/g, '-');
         
         // Create the search history entry
@@ -28,19 +28,19 @@ export async function POST(request: Request) {
                 {
                     lng: "en",
                     data: {
-                        title: body.locationName, // Removed "Search for" prefix
+                        title: body.locationName,
                         slug: slug,
                         locationname: body.locationName,
                         lat: body.lat,
                         lon: body.lon,
                         temperature: body.temperature,
-                        timestamp: new Date().toISOString(), // Store as ISO string
-                        userid: body.userId || "guest" // Use "guest" if no user ID
+                        timestamp: new Date().toISOString(),
+                        userid: userId || "guest" // <-- use userId from Clerk
                     },
                 },
             ],
         });
-        console.log("userId:", body.userId);
+        console.log("userId:", userId);
         return NextResponse.json({ 
             success: true, 
             data: newHistory 

@@ -4,17 +4,13 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RecentSearches from "@/components/RecentSearches";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs"; // Import Clerk's useUser hook
 
 export default function Home() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState<"C" | "F">("C");
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [recentSearches] = useState([
-  //   { name: "San Francisco", temp: "19°C", time: "2 hours ago" },
-  //   { name: "Miami", temp: "29°C", time: "1 day ago" },
-  //   { name: "Chicago", temp: "12°C", time: "3 days ago" },
-  // ]);
+   const { isSignedIn } = useUser(); // Get authentication status
 
   const handleRecentSearchClick = (id: string) => {
     router.push(`/forecast/${id}`);
@@ -31,11 +27,13 @@ export default function Home() {
       
       <Hero />
 
-      {/* Add RecentSearches component */}
-      <RecentSearches 
-        tempUnit={tempUnit}
-        onSearchClick={handleRecentSearchClick}
-      />
+     {/* Show RecentSearches only if user is authenticated */}
+      {isSignedIn && (
+        <RecentSearches 
+          tempUnit={tempUnit}
+          onSearchClick={handleRecentSearchClick}
+        />
+      )}
 
       <style jsx>{`
         @keyframes float {

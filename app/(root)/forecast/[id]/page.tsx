@@ -3,7 +3,6 @@ import WeatherDisplay from '@/components/WeatherDisplay';
 import RefreshButton from '@/components/RefreshButton';
 import { Suspense } from 'react';
 import WeatherSkeleton from '@/components/WeatherSkeleton';
-import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
 
 interface ForecastPageProps {
@@ -33,10 +32,9 @@ async function getWeatherData(lat: number, lon: number, forceRefresh = false) {
   }
 }
 
-async function saveSearchHistory(locationName: string, lat: number, lon: number, temperature: number, userId: string | null) {
+async function saveSearchHistory(locationName: string, lat: number, lon: number, temperature: number) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    
     const response = await fetch(`${baseUrl}/api/create-history`, {
       method: 'POST',
       headers: {
@@ -47,7 +45,6 @@ async function saveSearchHistory(locationName: string, lat: number, lon: number,
         lat,
         lon,
         temperature,
-        userId: userId || 'guest', // Use 'guest' if no user ID is available
       }),
     });
 
@@ -76,18 +73,16 @@ export default async function ForecastPage({
 
   const awaitedSearchParams = await searchParams;
   const forceRefresh = awaitedSearchParams.refresh === 'true';
-   const { userId } = await auth()
 
   try {
     const weatherData = await getWeatherData(lat, lon, forceRefresh);
 
     // Save search history after successful weather data fetch
     await saveSearchHistory(
-      weatherData.name, // locationName from weather data
-      weatherData.coord.lat, // lat from weather data
-      weatherData.coord.lon, // lon from weather data
-      Math.round(weatherData.main.temp), // temperature rounded to nearest integer
-      userId || 'guest'
+      weatherData?.current?.name, // locationName from weather data
+      weatherData?.current?.coord?.lat, // lat from weather data
+      weatherData?.current?.coord?.lon, // lon from weather data
+      Math?.round(weatherData?.current?.main?.temp), // temperature rounded to nearest integer
     );
 
     return (

@@ -1,32 +1,23 @@
-import { Sun, Cloud, CloudRain, Snowflake, Zap } from "lucide-react";
+import { Cloud, Droplets, Sun, CloudSun, CloudRain, CloudLightning, Snowflake } from "lucide-react";
 
 interface WeatherIconProps {
-  type: string;
+  main: string;
   className?: string;
 }
 
-export default function WeatherIcon({ type, className = "w-6 h-6" }: WeatherIconProps) {
-  const icons = {
-    sun: Sun,
-    cloud: Cloud,
-    rain: CloudRain,
-    snow: Snowflake,
-    storm: Zap,
+export default function WeatherIcon({ main, className }: WeatherIconProps) {
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    Clear: Sun,
+    Clouds: CloudSun,
+    Rain: CloudRain,
+    Snow: Snowflake,
+    Thunderstorm: CloudLightning,
+    Drizzle: Droplets,
+    Mist: Cloud,
+    Fog: Cloud,
+    Haze: Cloud,
   };
 
-  const IconComponent = icons[type as keyof typeof icons] || Sun;
-
-  return (
-    <IconComponent
-      className={`${className} animate-pulse`}
-      style={{
-        animation:
-          type === "sun"
-            ? "spin 20s linear infinite"
-            : type === "cloud"
-            ? "float 3s ease-in-out infinite"
-            : "pulse 2s ease-in-out infinite",
-      }}
-    />
-  );
+  const IconComponent = iconMap[main] || Cloud;
+  return <IconComponent className={className} />;
 }

@@ -3,39 +3,8 @@ import { Clock, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-
-interface RecentSearch {
-  id: string;
-  name: string;
-  temp: string;
-  timestamp: string;
-  lat: number;
-  lon: number;
-}
-
-interface RecentSearchesProps {
-  tempUnit: "C" | "F";
-  onSearchClick: (name: string) => void;
-}
-
-// Utility function to format relative time
-function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 0) return "just now";
-  if (seconds < 60) return "less than a minute ago";
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min${minutes === 1 ? '' : 's'} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} day${days === 1 ? '' : 's'} ago`;
-}
+import type { RecentSearch, RecentSearchesProps } from "@/types";
+import { formatTimeAgo } from "@/lib/utils";
 
 export default function RecentSearches({ 
   tempUnit, 
@@ -51,7 +20,11 @@ export default function RecentSearches({
         const response = await fetch('/api/get-history');
         if (!response.ok) throw new Error('Failed to fetch recent searches');
         const data = await response.json();
-        setSearches(data);
+        // Sort by timestamp (newest first)
+        const sortedData = data.sort((a: RecentSearch, b: RecentSearch) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setSearches(sortedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
