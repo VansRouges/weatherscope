@@ -4,7 +4,7 @@ import WeatherIcon from "./WeatherIcon";
 import { format } from "date-fns";
 
 interface ForecastCardProps {
-  date: string; // Format: "DD/MM/YYYY"
+  date: string; // Format: "M/D/YYYY" (e.g. "6/25/2025")
   temp_min: number;
   temp_max: number;
   weather: {
@@ -15,14 +15,14 @@ interface ForecastCardProps {
 }
 
 export function ForecastCard({ date, temp_min, temp_max, weather, tempUnit }: ForecastCardProps) {
-  // Parse DD/MM/YYYY format
-  const parseCustomDate = (dateString: string) => {
-    const [day, month, year] = dateString.split('/');
+  // Parse M/D/YYYY format (e.g. "6/25/2025")
+  const parseDate = (dateString: string) => {
+    const [month, day, year] = dateString.split('/');
     return new Date(Number(year), Number(month) - 1, Number(day));
   };
 
-  // Format date as "Tue, Jun 24"
-  const formattedDate = format(parseCustomDate(date), "EEE, MMM d");
+  // Format as "Wed, Jun 25" (Weekday, Month Day)
+  const formattedDate = format(parseDate(date), "EEE, MMM d");
 
   return (
     <Card>
