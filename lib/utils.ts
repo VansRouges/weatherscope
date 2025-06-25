@@ -94,3 +94,19 @@ export function formatTimeAgo(dateString: string): string {
   const days = Math.floor(hours / 24);
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
+
+export const formatTime = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+export const getWindDirection = (deg: number) => {
+  const directions = [
+    "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+  ];
+  return directions[Math.round(deg / 22.5) % 16];
+};
